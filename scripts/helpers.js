@@ -37,7 +37,7 @@ export function getCheckbox() {
     /**
      * Get checkbox node
      */
-    return document.querySelector('checkbox');
+    return document.querySelector('#tries-checkbox');
 }
 
 export function getContinueBtn() {
@@ -51,7 +51,7 @@ export function getNumberInput() {
     /**
      * Get number input node
      */
-    return document.querySelector('#numtries')
+    return document.querySelector('input[type="number"]');
 }
 
 export function getOutput() {
@@ -72,14 +72,14 @@ export function getTiles() {
     /**
      * Get the card tiles
      */
-    return document.querySelector('.tiles input')
+    return document.querySelectorAll('.tiles input')
 }
 
 export function getTries() {
     /**
      * Get the current value of tries
      */
-    return getNumberInput().ariaValueMax;
+    return getNumberInput().value;
 }
 
 export function getRestartBtn() {
@@ -115,25 +115,31 @@ export function setCard() {
     ];
 
     const idx=Math.floor(Math.random()*9);
-    const card=card[idx];
-    const path=card.split('').join('_');
+    const card=cards[idx];
+    const path=card.split(' ').join('_');
     const cardNode= getCardNode();
-    cardNode.src =- 'images/&{path}.svg}';
-    cardNode.alt=
+    cardNode.src =`images/${path}.svg`;
+    cardNode.alt = card;
 
     // hide the card
-    cardNode.classList.toggle('hidden'. true);
+    cardNode.classList.toggle('hidden', true);
      // cancel the animation
+     cardNode.parentElement.classList.remove('flip');
+     cardNode.classList.remove('fade');
 }
 
 export function showCard() {
     /**
      * Show the answer card and disable the 'show' button
      */
+    const cardNode=getCardNode();
 
     getCardNode().classList.toggle('hidden', false);
-    getShowBtn.toggleAttribute('disaabled', true);
+    getShowBtn().toggleAttribute('disabled', true);
     // animate the card
+
+    cardNode.parentElement.classList.add('flip');
+    cardNode.classList.add('fade');
 
 }
 

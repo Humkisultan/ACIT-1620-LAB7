@@ -55,39 +55,45 @@ function setup() {
      * 
      */
 
-    const tiles = getTiles();
-    for (let tile of tiles) {
-        tile.addEventListener('click', () => {
-            const selectedCard = tile.alt;
-            const answerCard = getCard();
 
-            if (selectedCard === answerCard) {
-                showResults(true);
-            } else {
-                tile.disabled = true;
-                
-                if (getTries() > 1) {
-                    pause();
-                } else {
-                    showResults(false);
-                }
-            }
-        });
-    }
 
     getShowBtn().addEventListener('click', showCard);
     getRestartBtn().addEventListener('click',play);
+    getContinueBtn().addEventListener('click', activate);
     getCheckbox().addEventListener('change', toggleInputState);
     getNumberInput().addEventListener('input', (event)=> {
-        play()
-        getCheckbox().checked = false;
-    }
-    )
+    const inputValue =event.target.value;
+        if (inputValue !== ''){
+            tries=parseInt(inputValue);
+            play();
+        }
+    });
 
-    getCardNode().classList.toggle('fade',true);
-    getCardNode().parentElement.classList.toggle('flip', true);
-    
+
+
+    for (let tile of getTiles()) {
+        tile.addEventListener('click', (e) => {
+            const outputNodes = getOutput().querySelectorAll('span');
+
+            outputNodes.item(0).innerHTML =`You selected the <b>${e.target.alt}</b>`;
+
+            if (tile.alt === getCard()) {
+                outputNodes.item(1).textContent = 'You win!';
+                showResults();
+            } else {
+                outputNodes.item(1).textContent = 'Not quite!';
+                
+                if (tries > 1) {
+                    pause();
+                } else {
+                    showResults();
+                }
+            }
+        })
+    }
 }
+
+
 
 function deactivate() {
     /**
@@ -97,10 +103,8 @@ function deactivate() {
      */
     for( let tile of getTiles()){
         tile.toggleAttribute('disabled', true);
-        tile.parentElement.classList.add('dim');
     }
-    getCardNode().classList.toggle('fade', false);
-    getCardNode().parentElement.classList.toggle('flip', false);
+    getPanel().classList.toggle('dim', true);
 }
 
 function activate() {
@@ -115,29 +119,14 @@ function activate() {
      */
 
     
-    const tiles = getTiles();
-    for (let tile of tiles) {
-        tile.addEventListener('click', () => {
-            const selectedCard = tile.alt;
-            const answerCard = getCard();
-
-            if (selectedCard === answerCard) {
-                showResults(true);
-            } else {
-                tile.disabled = true;
-                if (getTries() > 1) {
-                    pause();
-                } else {
-                    showResults(false);
-                }
-            }
-        });
+    for (let tile of getTiles()) {
+        tile.toggleAttribute('disabled', false);
     }
 
+    getPanel().classList.toggle('dim', false);
     getCheckbox().toggleAttribute('checked', false);
-    getNumberInput().disabled = true;
     getContinueBtn().classList.toggle('hidden', true);
-    getShowBtn().classList.remove('hidden');
+    getShowBtn().toggleAttribute('disabled', false);
 
 }
 
@@ -152,18 +141,18 @@ function play() {
      * - Hide the 'show' and 'restart' buttons
      * - Clear the previous round's output
      */
-    tries = getCheckbox().checked ? parseInt(getNumberInput().value) : 1;
     setCard();
     const tiles=getTiles();
     const randomizedTiles = shuffle(Array.from(tiles))
     for(let i=0; i< randomizedTiles.length; i++){
-        randomizedTiles[i].parentElement.style.order=i+1;
+        randomizedTiles[i].parentElement.style.order=`${i}`;
     }
     
     activate();
-    getShowBtn().classList.add('hidden');
-    getRestartBtn().classList.add('hidden');
-    getOutput().textContent = ""; 
+    getShowBtn().classList.add('hidden', true);
+    getRestartBtn().classList.add('hidden', true);
+    getOutput().querySelectorAll('span:not(:last-child)').forEach(el => el.textContent = '');
+
 }
 
 
@@ -175,18 +164,13 @@ function pause() {
      * - Show the number of tries left
      * - Show the continue button
      */
-    if (tries > 1) {
-        deactivate();
+    
+    deactivate();
 
-        getOutput().textContent = 'You have ${tries} tries left.';
+    getOutput().querySelector('span:last-child').textContent = `You have ${--tries} tries left.`;
+    getContinueBtn().classList.remove('hidden', false);
 
-        const tiles = getTiles();
-        for( let tile of getTiles()){
-            tile.disabled = true;
-        }
-        getContinueBtn().classList.remove('hidden');
-
-    }
+    
 }
 
 
@@ -198,19 +182,14 @@ function showResults() {
      * - Show the 'show' and 'restart' buttons
      * - Stop showing the number of tries left
      */
-    if (tries === 0 || getCard() === getCardNode().alt()) {
-        deactivate();
+    
+    deactivate();
 
-        getContinueBtn().classList.add('hidden');
-        getShowBtn().classList.remove('hidden');
-        getRestartBtn().classList.remove('hidden');
+    getContinueBtn().classList.add('hidden', true);
+    getShowBtn().classList.remove('hidden', false);
+    getRestartBtn().classList.remove('hidden', false);
 
-        if (tries === 0) {
-            getOutput().textContent = "Sorry, you've run out of guesses.";
-        } else {
-            getOutput().textContent = "Congratulations! You've won!";
-        }
-    }
+    getOutput().querySelector('span:last-child').textContent = '';
 }
 
 // Set up and start the game
